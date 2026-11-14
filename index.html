@@ -1,40 +1,41 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>falconXNasa — Crop compatibility planner</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="site-shell">
-      <nav class="nav">
-        <a class="brand" href="#home" onclick="showHome()"
-          >falcon<span>X</span>Nasa</a
-        >
-        <div class="nav-actions">
-          <button class="nav-btn" onclick="scrollToPlanner()">soil</button>
-          <a class="nav-btn" href="about-us.html">about</a>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>falconXNasa — Crop compatibility planner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="site-shell">
+    <nav class="nav">
+      <a class="brand" href="#home" onclick="showHome()">falcon<span>X</span>Nasa</a>
+      <div class="nav-actions">
+        <button class="nav-btn" onclick="scrollToPlanner()">soil</button>
+        <button class="nav-btn" onclick="showAbout()">about</button>
+      </div>
+    </nav>
+
+    <main id="homePage">
+      <section class="hero" id="home">
+        <img class="hero-image" src="ManInfield.png" alt="Image of man in field" />
+        <div class="hero-copy">
+          <h1>Let your soil<br><em>tell the story.</em></h1>
+          <p>Make your next growing decision with a little more context. Match your crop to the season, place, and soil beneath your feet.</p>
+          <button class="primary-btn" onclick="scrollToPlanner()">Plan a crop <span>→</span></button>
+        </div>
+      </section>
+
+      <section class="planner-wrap" id="planner">
+        <div class="section-heading">
+          <h2>Tell us what you're planning.</h2>
+          <p>Three small details can make a big difference. Get a quick compatibility review, or discover crops that fit your conditions.</p>
         </div>
       </nav>
 
-      <main id="homePage">
-        <section class="hero" id="home">
-          <img
-            class="hero-image"
-            src="ManInfield.png"
-            alt="Hand-drawn crop planning concept for falconXNasa"
-          />
-          <div class="hero-copy">
-            <div class="eyebrow">plant with confidence</div>
-            <h1>Let your soil<br /><em>tell the story.</em></h1>
-            <p>
-              Make your next growing decision with a little more context. Match
-              your crop to the season, place, and soil beneath your feet.
-            </p>
-            <button class="primary-btn" onclick="scrollToPlanner()">
-              Plan a crop <span>→</span>
-            </button>
+        <div class="planner">
+          <div class="planner-top">
+            <div><div class="planner-kicker">your growing context</div><h3>Build your field profile</h3></div>
           </div>
         </section>
 
