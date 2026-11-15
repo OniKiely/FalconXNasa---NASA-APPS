@@ -6,153 +6,159 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>falconXNasa — Crop compatibility planner</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="script.js" type="module"></script>
 </head>
 
 <body>
   <div class="site-shell">
-    <div class="site-shell">
-      <!-- NAVIGATION -->
-      <nav class="nav">
-        <a class="brand" href="index.html"> falcon<span>X</span>Nasa </a>
+    <!-- NAVIGATION -->
+    <nav class="nav">
+      <a class="brand" href="index.html">falcon<span>X</span>Nasa</a>
 
-        <div class="nav-actions">
-          <a href="index.html" class="active">Home</a>
-          <a href="index.html#planner">Soil</a>
-          <a href="about-us.html">About</a>
-          <a href="team.html">The Team</a>
+      <div class="nav-actions">
+        <a href="index.html" class="active" aria-current="page">Home</a>
+        <a href="#planner">Soil</a>
+        <a href="about-us.html">About</a>
+        <a href="team.html">The Team</a>
+      </div>
+
+      <div class="nav-caption">✿ Crop Compatibility Planner</div>
+    </nav>
+
+    <main id="homePage">
+      <section class="hero" id="home">
+        <img class="hero-image" src="images/ManInfield.png" alt="A farmer standing in a field" />
+        <div class="hero-copy">
+          <h1>Let your soil<br><em>tell the story.</em></h1>
+          <p>Make your next growing decision with a little more context. Match your crop to the season, place, and
+            soil beneath your feet.</p>
+          <a class="primary-btn" href="#planner">Plan a crop <span aria-hidden="true">→</span></a>
+        </div>
+      </section>
+
+      <section class="planner-wrap" id="planner">
+        <div class="section-heading">
+          <h2>Tell us what you're planning.</h2>
+          <p>
+            Three small details can make a big difference. Get a quick
+            compatibility review, or discover crops that fit your conditions.
+          </p>
         </div>
 
-        <div class="nav-caption">✿ Crop Compatibility Planner</div>
-      </nav>
-
-      <main id="homePage">
-        <section class="hero" id="home">
-          <img class="hero-image" src="images/ManInfield.png" alt="Image of man in field" />
-          <div class="hero-copy">
-            <h1>Let your soil<br><em>tell the story.</em></h1>
-            <p>Make your next growing decision with a little more context. Match your crop to the season, place, and
-              soil beneath your feet.</p>
-            <button class="primary-btn" onclick="scrollToPlanner()">Plan a crop <span>→</span></button>
-          </div>
-        </section>
-
-        <section class="planner-wrap" id="planner">
-          <div class="section-heading">
-            <h2>Tell us what you're planning.</h2>
-            <p>
-              Three small details can make a big difference. Get a quick
-              compatibility review, or discover crops that fit your conditions.
-            </p>
+        <form class="planner" id="plannerForm" novalidate>
+          <div class="planner-top">
+            <div>
+              <div class="planner-kicker">your growing context</div>
+              <h3>Build your field profile</h3>
+            </div>
           </div>
 
-          <div class="planner">
-            <div class="planner-top">
+          <fieldset class="mode-switch">
+            <legend class="visually-hidden">Planner mode</legend>
+            <label class="mode">
+              <input type="radio" name="mode" value="check" checked />
+              <span>Check my crop</span>
+            </label>
+            <label class="mode">
+              <input type="radio" name="mode" value="recommend" />
+              <span>Recommend a crop</span>
+            </label>
+          </fieldset>
+
+          <div class="fields">
+            <div class="field-card">
+              <div class="field-icon" aria-hidden="true">⌖</div>
               <div>
-                <div class="planner-kicker">your growing context</div>
-                <h3>Build your field profile</h3>
+                <label class="field-label" for="location">Where is your farm?</label>
+                <span class="field-help" id="locationHelp">We'll use your region as a climate hint.</span>
               </div>
+              <input id="location" name="location" type="text" autocomplete="address-level2"
+                placeholder="e.g. Eldoret, Kenya" aria-describedby="locationHelp" />
             </div>
 
-            <div class="mode-switch">
-              <button class="mode active" id="checkMode" onclick="setMode('check')">
-                Check my crop
-              </button>
-              <button class="mode" id="recommendMode" onclick="setMode('recommend')">
-                Recommend a crop
-              </button>
+            <fieldset class="field-card" aria-labelledby="seasonLabel">
+              <div class="field-icon" aria-hidden="true">◷</div>
+              <div>
+                <span class="field-label" id="seasonLabel">When will you plant?</span>
+                <span class="field-help">Choose your intended planting season.</span>
+              </div>
+              <div class="season-grid">
+                <label class="season">
+                  <input type="radio" name="season" value="Spring" checked />
+                  <span>Spring<small>Mar–May</small></span>
+                </label>
+                <label class="season">
+                  <input type="radio" name="season" value="Summer" />
+                  <span>Summer<small>Jun–Aug</small></span>
+                </label>
+                <label class="season">
+                  <input type="radio" name="season" value="Fall" />
+                  <span>Fall<small>Sep–Nov</small></span>
+                </label>
+                <label class="season">
+                  <input type="radio" name="season" value="Winter" />
+                  <span>Winter<small>Dec–Feb</small></span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="field-card">
+              <div class="field-icon" aria-hidden="true">♧</div>
+              <div>
+                <label class="field-label" for="soil">What is your soil like?</label>
+                <span class="field-help">Pick the closest match for your field.</span>
+              </div>
+              <select id="soil" name="soil" required>
+                <option value="loam">Loam — balanced &amp; fertile</option>
+                <option value="clay">Clay — dense &amp; moisture-holding</option>
+                <option value="sandy">Sandy — light &amp; fast-draining</option>
+                <option value="silt">Silt — soft &amp; nutrient-rich</option>
+                <option value="peat">Peat — acidic &amp; organic</option>
+              </select>
             </div>
 
-            <div class="fields">
-              <div class="field-card">
-                <div class="field-icon">⌖</div>
-                <div>
-                  <span class="field-label">Where is your farm?</span><span class="field-help">We'll use your region as
-                    a climate hint.</span>
-                </div>
-                <input id="location" placeholder="e.g. Eldoret, Kenya" />
+            <div class="field-card" id="cropField">
+              <div class="field-icon" aria-hidden="true">✿</div>
+              <div>
+                <label class="field-label" for="crop">What would you like to grow?</label>
+                <span class="field-help">Select your target crop.</span>
               </div>
-
-              <div class="field-card">
-                <div class="field-icon">◷</div>
-                <div>
-                  <span class="field-label">When will you plant?</span><span class="field-help">Choose your intended
-                    planting season.</span>
-                </div>
-                <div class="season-grid">
-                  <button class="season selected" data-season="Spring" onclick="selectSeason(this)">
-                    Spring<small>Mar–May</small>
-                  </button>
-                  <button class="season" data-season="Summer" onclick="selectSeason(this)">
-                    Summer<small>Jun–Aug</small>
-                  </button>
-                  <button class="season" data-season="Fall" onclick="selectSeason(this)">
-                    Fall<small>Sep–Nov</small>
-                  </button>
-                  <button class="season" data-season="Winter" onclick="selectSeason(this)">
-                    Winter<small>Dec–Feb</small>
-                  </button>
-                </div>
-              </div>
-
-              <div class="field-card">
-                <div class="field-icon">♧</div>
-                <div>
-                  <span class="field-label">What is your soil like?</span><span class="field-help">Pick the closest
-                    match for your field.</span>
-                </div>
-                <select id="soil">
-                  <option value="loam">Loam — balanced & fertile</option>
-                  <option value="clay">Clay — dense & moisture-holding</option>
-                  <option value="sandy">Sandy — light & fast-draining</option>
-                  <option value="silt">Silt — soft & nutrient-rich</option>
-                  <option value="peat">Peat — acidic & organic</option>
-                </select>
-              </div>
-
-              <div class="field-card" id="cropField">
-                <div class="field-icon">✿</div>
-                <div>
-                  <span class="field-label">What would you like to grow?</span><span class="field-help">Select your
-                    target crop.</span>
-                </div>
-                <select id="crop">
-                  <option value="maize">Maize / corn</option>
-                  <option value="beans">Beans</option>
-                  <option value="tomato">Tomatoes</option>
-                  <option value="potato">Potatoes</option>
-                  <option value="rice">Rice</option>
-                  <option value="carrot">Carrots</option>
-                  <option value="wheat">Wheat</option>
-                </select>
-              </div>
-            </div>
-
-            <button class="submit" onclick="runPlanner()">
-              <span id="submitLabel">Check crop suitability</span><span class="arrow">→</span>
-            </button>
-            <p class="fine-print">
-              Results are guidance only. A field soil test is recommended before
-              planting.
-            </p>
-            <div class="result" id="result">
-              <div class="result-head">
-                <h4 id="resultTitle"></h4>
-                <div class="score" id="score"></div>
-              </div>
-              <div class="meter"><span id="meterFill"></span></div>
-              <p id="resultText"></p>
+              <select id="crop" name="crop" required>
+                <option value="maize">Maize / corn</option>
+                <option value="beans">Beans</option>
+                <option value="tomato">Tomatoes</option>
+                <option value="potato">Potatoes</option>
+                <option value="rice">Rice</option>
+                <option value="carrot">Carrots</option>
+                <option value="wheat">Wheat</option>
+              </select>
             </div>
           </div>
-        </section>
-      </main>
 
-      <footer>
-        <span>falconXNasa / crop intelligence for the ground beneath us</span><span>Made for better growing
-          decisions.</span>
-      </footer>
-    </div>
+          <button class="submit" type="submit">
+            <span id="submitLabel">Check crop suitability</span><span class="arrow" aria-hidden="true">→</span>
+          </button>
+          <p class="fine-print">
+            Results are guidance only. A field soil test is recommended before planting.
+          </p>
 
-    <script src="script.js" type="module"></script>
+          <output class="result" id="result" for="location soil crop" aria-live="polite" hidden>
+            <span class="result-head">
+              <strong class="result-title" id="resultTitle"></strong>
+              <span class="score" id="score"></span>
+            </span>
+            <span class="meter"><span id="meterFill"></span></span>
+            <span class="result-text" id="resultText"></span>
+          </output>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <span>falconXNasa / crop intelligence for the ground beneath us</span>
+      <span>Made for better growing decisions.</span>
+    </footer>
+  </div>
 </body>
 
 </html>

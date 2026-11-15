@@ -1,6 +1,3 @@
-let mode = "check";
-let season = "Spring";
-
 const cropData = {
   maize: { name: "Maize", ideal: ["loam", "silt"], seasons: ["Spring", "Summer"], score: 92, note: "Your conditions look strong for maize. Loam or silt soils give roots room to establish, while warm planting windows support steady growth." },
   beans: { name: "Beans", ideal: ["loam", "sandy"], seasons: ["Spring", "Fall"], score: 88, note: "Beans should be a good match. Prioritise drainage and avoid planting into waterlogged soil; a gentle, warm season will help germination." },
@@ -11,67 +8,104 @@ const cropData = {
   wheat: { name: "Wheat", ideal: ["loam", "clay"], seasons: ["Fall", "Winter"], score: 81, note: "Wheat looks like a workable choice. Aim for fertile soil and avoid planting where water pools after rain." }
 };
 
-function setMode(next) {
-  mode = next;
-  document.getElementById("checkMode").classList.toggle("active", next === "check");
-  document.getElementById("recommendMode").classList.toggle("active", next === "recommend");
-  document.getElementById("cropField").style.display = next === "recommend" ? "none" : "grid";
-  document.getElementById("submitLabel").textContent = next === "recommend" ? "Find my best crop" : "Check crop suitability";
-  document.getElementById("result").classList.remove("visible");
+const SOIL_BONUS = 30;
+const SEASON_BONUS = 20;
+const SOIL_PENALTY = 18;
+const SEASON_PENALTY = 10;
+const MIN_SCORE = 48;
+
+const form = document.getElementById("plannerForm");
+const cropField = document.getElementById("cropField");
+const cropSelect = document.getElementById("crop");
+const submitLabel = document.getElementById("submitLabel");
+const result = document.getElementById("result");
+const resultTitle = document.getElementById("resultTitle");
+const scoreEl = document.getElementById("score");
+const resultText = document.getElementById("resultText");
+const meterFill = document.getElementById("meterFill");
+
+/** Read the form into a plain object — also the shape to POST to the backend later. */
+function readForm() {
+  const data = new FormData(form);
+  return {
+    mode: data.get("mode"),
+    location: (data.get("location") || "").trim(),
+    season: data.get("season"),
+    soil: data.get("soil"),
+    crop: data.get("crop"), // null in recommend mode (select is disabled)
+  };
 }
 
-function selectSeason(button) {
-  document.querySelectorAll(".season").forEach(x => x.classList.remove("selected"));
-  button.classList.add("selected");
-  season = button.dataset.season;
+function recommendCrop({ soil, season }) {
+  const rank = (c) =>
+    c.score + (c.ideal.includes(soil) ? SOIL_BONUS : 0) + (c.seasons.includes(season) ? SEASON_BONUS : 0);
+  const best = Object.values(cropData).reduce((a, b) => (rank(b) > rank(a) ? b : a));
+  return { crop: best, score: best.score };
 }
 
-function runPlanner() {
-  const soil = document.getElementById("soil").value;
-  const location = document.getElementById("location").value.trim() || "your area";
-  let selected;
+function checkCrop({ crop, soil, season }) {
+  const c = cropData[crop];
+  let score = c.score;
+  if (!c.ideal.includes(soil)) score -= SOIL_PENALTY;
+  if (!c.seasons.includes(season)) score -= SEASON_PENALTY;
+  return { crop: c, score: Math.max(MIN_SCORE, score) };
+}
 
-  if (mode === "recommend") {
-    selected = Object.values(cropData).sort((a, b) => {
-      const aScore = (a.ideal.includes(soil) ? 30 : 0) + (a.seasons.includes(season) ? 20 : 0) + a.score;
-      const bScore = (b.ideal.includes(soil) ? 30 : 0) + (b.seasons.includes(season) ? 20 : 0) + b.score;
-      return bScore - aScore;
-    })[0];
-    document.getElementById("resultTitle").textContent = `${selected.name} is your best match`;
-    document.getElementById("score").textContent = `${selected.score}% fit`;
-    document.getElementById("resultText").textContent = `For ${location} in ${season}, ${selected.name.toLowerCase()} is a promising place to start. ${selected.note}`;
+function renderResult(input) {
+  const place = input.location || "your area";
+
+  if (input.mode === "recommend") {
+    const { crop, score } = recommendCrop(input);
+    resultTitle.textContent = `${crop.name} is your best match`;
+    scoreEl.textContent = `${score}% fit`;
+    resultText.textContent = `For ${place} in ${input.season}, ${crop.name.toLowerCase()} is a promising place to start. ${crop.note}`;
+    meterFill.style.width = `${score}%`;
   } else {
-    selected = cropData[document.getElementById("crop").value];
-    let score = selected.score;
-    if (!selected.ideal.includes(soil)) score -= 18;
-    if (!selected.seasons.includes(season)) score -= 10;
-    score = Math.max(48, score);
-    document.getElementById("resultTitle").textContent = `${selected.name} compatibility`;
-    document.getElementById("score").textContent = `${score}% fit`;
-    document.getElementById("resultText").textContent = `${selected.note} Based on the profile for ${location}, this is a ${score >= 80 ? "strong" : "moderate"} starting point.`;
-    selected = { ...selected, score };
+    const { crop, score } = checkCrop(input);
+    resultTitle.textContent = `${crop.name} compatibility`;
+    scoreEl.textContent = `${score}% fit`;
+    resultText.textContent = `${crop.note} Based on the profile for ${place}, this is a ${score >= 80 ? "strong" : "moderate"} starting point.`;
+    meterFill.style.width = `${score}%`;
   }
 
-  document.getElementById("meterFill").style.width = `${selected.score}%`;
-  document.getElementById("result").classList.add("visible");
+  result.hidden = false;
+  // Restart the entry animation on repeat submissions.
+  result.classList.remove("visible");
+  void result.offsetWidth;
+  result.classList.add("visible");
 }
 
-function scrollToPlanner() {
-  showHome();
-  setTimeout(() => document.getElementById("planner").scrollIntoView({ behavior: "smooth" }), 30);
+function applyMode(mode) {
+  const recommend = mode === "recommend";
+  cropField.hidden = recommend;
+  cropSelect.disabled = recommend; // excluded from FormData when hidden
+  submitLabel.textContent = recommend ? "Find my best crop" : "Check crop suitability";
+  result.hidden = true;
 }
 
-function showAbout() {
-  document.getElementById("homePage").style.display = "none";
-  document.getElementById("aboutPage").classList.add("visible");
-  window.scrollTo({ top: 0, behavior: "smooth" });
-  history.replaceState(null, "", "#about");
-}
+form.addEventListener("change", (e) => {
+  if (e.target.name === "mode") applyMode(e.target.value);
+});
 
-function showHome() {
-  document.getElementById("homePage").style.display = "block";
-  document.getElementById("aboutPage").classList.remove("visible");
-  history.replaceState(null, "", "#home");
-}
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  if (!form.reportValidity()) return;
+  const formInfo = readForm()
+  renderResult(formInfo);
 
-if (location.hash === "#about") showAbout();
+  fetch("http://localhost:8000/submissionForm", {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(formInfo)
+  })
+    .then((response) => {
+      if (!response.ok) throw new Error(`Server responded ${response.status}`);
+      return response.json();
+    })
+    .then((data) => console.log("Backend:", data))
+    .catch((err) => console.error("POST /submissionForm failed:", err));
+});
+
+applyMode(new FormData(form).get("mode"));
