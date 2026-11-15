@@ -1,11 +1,13 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>falconXNasa — Crop compatibility planner</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body>
   <div class="site-shell">
     <div class="site-shell">
@@ -23,15 +25,16 @@
         <div class="nav-caption">✿ Crop Compatibility Planner</div>
       </nav>
 
-    <main id="homePage">
-      <section class="hero" id="home">
-        <img class="hero-image" src="images/ManInfield.png" alt="Image of man in field" />
-        <div class="hero-copy">
-          <h1>Let your soil<br><em>tell the story.</em></h1>
-          <p>Make your next growing decision with a little more context. Match your crop to the season, place, and soil beneath your feet.</p>
-          <button class="primary-btn" onclick="scrollToPlanner()">Plan a crop <span>→</span></button>
-        </div>
-      </section>
+      <main id="homePage">
+        <section class="hero" id="home">
+          <img class="hero-image" src="images/ManInfield.png" alt="Image of man in field" />
+          <div class="hero-copy">
+            <h1>Let your soil<br><em>tell the story.</em></h1>
+            <p>Make your next growing decision with a little more context. Match your crop to the season, place, and
+              soil beneath your feet.</p>
+            <button class="primary-btn" onclick="scrollToPlanner()">Plan a crop <span>→</span></button>
+          </div>
+        </section>
 
         <section class="planner-wrap" id="planner">
           <div class="section-heading">
@@ -51,18 +54,10 @@
             </div>
 
             <div class="mode-switch">
-              <button
-                class="mode active"
-                id="checkMode"
-                onclick="setMode('check')"
-              >
+              <button class="mode active" id="checkMode" onclick="setMode('check')">
                 Check my crop
               </button>
-              <button
-                class="mode"
-                id="recommendMode"
-                onclick="setMode('recommend')"
-              >
+              <button class="mode" id="recommendMode" onclick="setMode('recommend')">
                 Recommend a crop
               </button>
             </div>
@@ -71,10 +66,8 @@
               <div class="field-card">
                 <div class="field-icon">⌖</div>
                 <div>
-                  <span class="field-label">Where is your farm?</span
-                  ><span class="field-help"
-                    >We'll use your region as a climate hint.</span
-                  >
+                  <span class="field-label">Where is your farm?</span><span class="field-help">We'll use your region as
+                    a climate hint.</span>
                 </div>
                 <input id="location" placeholder="e.g. Eldoret, Kenya" />
               </div>
@@ -82,38 +75,20 @@
               <div class="field-card">
                 <div class="field-icon">◷</div>
                 <div>
-                  <span class="field-label">When will you plant?</span
-                  ><span class="field-help"
-                    >Choose your intended planting season.</span
-                  >
+                  <span class="field-label">When will you plant?</span><span class="field-help">Choose your intended
+                    planting season.</span>
                 </div>
                 <div class="season-grid">
-                  <button
-                    class="season selected"
-                    data-season="Spring"
-                    onclick="selectSeason(this)"
-                  >
+                  <button class="season selected" data-season="Spring" onclick="selectSeason(this)">
                     Spring<small>Mar–May</small>
                   </button>
-                  <button
-                    class="season"
-                    data-season="Summer"
-                    onclick="selectSeason(this)"
-                  >
+                  <button class="season" data-season="Summer" onclick="selectSeason(this)">
                     Summer<small>Jun–Aug</small>
                   </button>
-                  <button
-                    class="season"
-                    data-season="Fall"
-                    onclick="selectSeason(this)"
-                  >
+                  <button class="season" data-season="Fall" onclick="selectSeason(this)">
                     Fall<small>Sep–Nov</small>
                   </button>
-                  <button
-                    class="season"
-                    data-season="Winter"
-                    onclick="selectSeason(this)"
-                  >
+                  <button class="season" data-season="Winter" onclick="selectSeason(this)">
                     Winter<small>Dec–Feb</small>
                   </button>
                 </div>
@@ -122,10 +97,8 @@
               <div class="field-card">
                 <div class="field-icon">♧</div>
                 <div>
-                  <span class="field-label">What is your soil like?</span
-                  ><span class="field-help"
-                    >Pick the closest match for your field.</span
-                  >
+                  <span class="field-label">What is your soil like?</span><span class="field-help">Pick the closest
+                    match for your field.</span>
                 </div>
                 <select id="soil">
                   <option value="loam">Loam — balanced & fertile</option>
@@ -139,8 +112,8 @@
               <div class="field-card" id="cropField">
                 <div class="field-icon">✿</div>
                 <div>
-                  <span class="field-label">What would you like to grow?</span
-                  ><span class="field-help">Select your target crop.</span>
+                  <span class="field-label">What would you like to grow?</span><span class="field-help">Select your
+                    target crop.</span>
                 </div>
                 <select id="crop">
                   <option value="maize">Maize / corn</option>
@@ -155,8 +128,7 @@
             </div>
 
             <button class="submit" onclick="runPlanner()">
-              <span id="submitLabel">Check crop suitability</span
-              ><span class="arrow">→</span>
+              <span id="submitLabel">Check crop suitability</span><span class="arrow">→</span>
             </button>
             <p class="fine-print">
               Results are guidance only. A field soil test is recommended before
@@ -175,11 +147,12 @@
       </main>
 
       <footer>
-        <span>falconXNasa / crop intelligence for the ground beneath us</span
-        ><span>Made for better growing decisions.</span>
+        <span>falconXNasa / crop intelligence for the ground beneath us</span><span>Made for better growing
+          decisions.</span>
       </footer>
     </div>
 
-    <script src="script.js"></script>
-  </body>
+    <script src="script.js" type="module"></script>
+</body>
+
 </html>
