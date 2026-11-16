@@ -29,6 +29,8 @@ The planner requires a city and state, or a ZIP code. That place is geocoded to 
 - USGS Water Data API: nearest streamflow and groundwater depth, also used as a light moisture cue in scoring — https://api.waterdata.usgs.gov
 - OpenET (etdata.org): monthly evapotranspiration for western U.S. points — https://etdata.org
 
+**Full write-up of how each API is called and scored:** see [API_USAGE.md](API_USAGE.md).
+
 ### API keys (`.env`, not `.venv`)
 
 Copy `.env.example` to a file named `.env` **next to `app.py`**. Do **not** put keys inside `.venv` (that is only the Python virtualenv).
