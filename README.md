@@ -1,4 +1,4 @@
-# falconXNasa — cleaned Flask project
+# falconXNasa Project
 
 This version reorganizes the uploaded Flask routes and JavaScript while keeping the existing API response structure. It adds a searchable crop picker and retains the original frontend styling and images.
 
