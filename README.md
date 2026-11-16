@@ -13,6 +13,7 @@ python app.py
 ```
 
 Open http://127.0.0.1:5002 . Change the port in `app.py` if needed.
+We also hosting the server using vercel : https://falcon-x-nasa-nasa-apps.vercel.app
 
 ## Files
 
