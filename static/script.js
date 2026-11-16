@@ -150,9 +150,17 @@ async function loadCatalog() {
 
 
 function plannerPayload() {
+  const city = byId("city").value.trim();
+  const state = byId("state").value.trim();
+  const postalCode = byId("postalCode").value.trim();
+  const country = byId("country").value.trim();
   return {
     mode,
-    location: byId("location").value.trim(),
+    city,
+    state,
+    postal_code: postalCode,
+    country,
+    location: [city, state, postalCode, country].filter(Boolean).join(", "),
     season,
     soil: byId("soil").value,
     variety: byId("crop").value,
@@ -165,7 +173,34 @@ function plannerPayload() {
 
 
 
-function showAssessment(details, assessment) {
+function locationHeaderLines(data, assessment) {
+  const located = (data.context && data.context.location) || null;
+  const lines = [];
+  const place =
+    (assessment && assessment.location) ||
+    (located && located.display_name) ||
+    (data.context && data.context.query) ||
+    "";
+  if (place) {
+    lines.push(`Resolved place: ${place}`);
+  }
+  const lat = located && located.latitude;
+  const lon = located && located.longitude;
+  const coords =
+    (assessment && assessment.coordinates) ||
+    (lat != null && lon != null
+      ? `${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`
+      : "");
+  if (coords) {
+    lines.push(
+      `Coordinates: ${coords} (place centroid, not a field boundary).`
+    );
+  }
+  return lines;
+}
+
+function showAssessment(details, data) {
+  const assessment = data.result;
   const score = assessment.compatibility_score;
 
   const result = byId("result");
@@ -210,6 +245,13 @@ function showAssessment(details, assessment) {
 
   // Display assessment details
   details.replaceChildren();
+  const climateLines = [
+    ...locationHeaderLines(data, assessment),
+    ...((assessment.field_context || []).length
+      ? assessment.field_context
+      : ((data.context && data.context.lines) || [])),
+  ];
+  addSection(details, "Location, climate, and water", climateLines);
 
   addSection(
     details,
@@ -266,12 +308,30 @@ function showAssessment(details, assessment) {
 function showRecommendations(details, data) {
   byId("resultTitle").textContent = "Varieties to explore";
   byId("resultText").textContent = data.disclaimer || "";
+  byId("score").textContent = "";
+  const climateLines = [
+    ...locationHeaderLines(data, null),
+    ...((data.context && data.context.lines) || []),
+  ];
+  addSection(details, "Location, climate, and water", climateLines);
   addSection(details, "Suggested varieties", (data.recommendations || []).map((crop) =>
     `${crop.variety} (${crop.crop}) — ${crop.status}${crop.issues?.length ? ": " + crop.issues.join(" ") : ""}`));
 }
 
+function hasFarmLocation(payload) {
+  const city = (payload.city || "").trim();
+  const state = (payload.state || "").trim();
+  const postal = (payload.postal_code || "").trim();
+  return Boolean((city && state) || postal);
+}
+
 async function runPlanner() {
   const payload = plannerPayload();
+  if (!hasFarmLocation(payload)) {
+    alert("Enter a city and state, or a ZIP code, so we can resolve farm coordinates.");
+    byId("city").focus();
+    return;
+  }
   if (mode === "check" && !payload.variety) {
     alert("Please search for and select a crop variety.");
     byId("cropSearch").focus();
@@ -295,7 +355,7 @@ async function runPlanner() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Request failed");
     if (mode === "recommend") showRecommendations(details, data);
-    else showAssessment(details, data.result);
+    else showAssessment(details, data);
   } catch (error) {
     byId("resultTitle").textContent = "Unable to check";
     byId("resultText").textContent = error.message;

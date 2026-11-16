@@ -4,10 +4,13 @@ from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 
 from services.catalog import categories, varieties
+from services.climate import empty_climate, fetch_climate
 from services.compatibility import assess, recommend
-from services.location import geocode
+from services.env import load_env
+from services.location import geocode, geocode_place, place_query
 
 ROOT = Path(__file__).resolve().parent
+load_env(ROOT / ".env")
 app = Flask(__name__, static_folder=str(ROOT / "static"), static_url_path="")
 VALID_SOILS = {"loam", "clay", "sandy", "silt", "peat"}
 VALID_SEASONS = {"spring", "summer", "fall", "winter"}
@@ -56,14 +59,47 @@ def catalog():
     )
 
 
+def clean_text(value, limit=80):
+    return " ".join(str(value or "").split())[:limit]
+
+
+def resolve_farm(data):
+    """Geocode structured farm fields, then load climate and water context once."""
+    city = clean_text(data.get("city"))
+    state = clean_text(data.get("state"))
+    postal_code = clean_text(data.get("postal_code") or data.get("zip"))
+    country = clean_text(data.get("country"))
+    query = place_query(city, state, postal_code, country)
+    if not query:
+        query = clean_text(data.get("location"), 180)
+    if not query:
+        return None, empty_climate(), ""
+    resolved = geocode_place(city, state, postal_code, country) if any(
+        (city, state, postal_code, country)
+    ) else geocode(query)
+    if resolved is None:
+        return None, empty_climate(), query
+    climate = fetch_climate(
+        resolved["latitude"],
+        resolved["longitude"],
+        data.get("season") or "Summer",
+        resolved.get("country_code") or "",
+    )
+    return resolved, climate, resolved.get("display_name") or query
+
+
 @app.get("/api/location")
 def location():
-    place = request.args.get("q", "").strip()
-    if not place:
-        return jsonify(error="Provide q"), 400
-    resolved = geocode(place)
+    city = clean_text(request.args.get("city"))
+    state = clean_text(request.args.get("state"))
+    postal_code = clean_text(request.args.get("postal_code") or request.args.get("zip"))
+    country = clean_text(request.args.get("country"))
+    if any((city, state, postal_code, country)):
+        resolved = geocode_place(city, state, postal_code, country)
+    else:
+        resolved = geocode(clean_text(request.args.get("q"), 180))
     if resolved is None:
-        return jsonify(error="Location could not be resolved."), 404
+        return jsonify(error="Location could not be resolved. Include a city, state, and ZIP code."), 404
     return jsonify(resolved)
 
 
@@ -91,20 +127,43 @@ def planner():
         if nitrogen not in (None, "low", "normal", "high"):
             raise ValueError("Invalid nitrogen value")
 
+        city = clean_text(data.get("city"))
+        state = clean_text(data.get("state"))
+        postal_code = clean_text(data.get("postal_code") or data.get("zip"))
+        if not ((city and state) or postal_code):
+            raise ValueError(
+                "Farm location is required: enter a city and state, or a ZIP code."
+            )
+
+        resolved, climate, place = resolve_farm(data)
+        context = {
+            "location": resolved,
+            "query": place,
+            "lines": list(climate.get("lines") or []),
+        }
+        if place and resolved is None:
+            context["lines"] = [
+                "That city, state, and ZIP could not be turned into coordinates, so climate and water data were skipped."
+            ]
+
         if mode == "recommend":
             return jsonify(
                 mode=mode,
-                recommendations=recommend(soil, season, zone),
-                disclaimer="Ranked by simple dataset matches, not predicted crop yield.",
+                context=context,
+                recommendations=recommend(soil, season, zone, climate=climate if resolved else None),
+                disclaimer=(
+                    "Ranked by soil, season, and location climate when coordinates resolve. "
+                    "This is not a predicted crop yield."
+                ),
             )
         if mode != "check":
             raise ValueError("Invalid mode")
 
         result = assess(
             str(data.get("variety") or ""), soil, season, zone, ph,
-            moisture, nitrogen, str(data.get("location") or "")[:180],
+            moisture, nitrogen, place, climate if resolved else None,
         )
-        return jsonify(mode=mode, result=result)
+        return jsonify(mode=mode, context=context, result=result)
     except (ValueError, TypeError) as exc:
         return jsonify(error=str(exc)), 400
 

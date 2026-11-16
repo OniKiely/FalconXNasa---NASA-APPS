@@ -69,12 +69,17 @@
               <div class="field-card">
                 <div class="field-icon">⌖</div>
                 <div>
-                  <span class="field-label">Where is your farm?</span
+                  <span class="field-label">Farm location (required)</span
                   ><span class="field-help"
-                    >We'll use your region as a climate hint.</span
+                    >Enter city and state, or a ZIP code. We resolve latitude and longitude for NASA POWER, USGS, and OpenET climate data.</span
                   >
                 </div>
-                <input id="location" placeholder="e.g. Eldoret, Kenya" />
+                <div class="location-grid">
+                  <input id="city" placeholder="City" autocomplete="address-level2" />
+                  <input id="state" placeholder="State" autocomplete="address-level1" />
+                  <input id="postalCode" placeholder="ZIP code" autocomplete="postal-code" />
+                  <input id="country" placeholder="Country (optional)" autocomplete="country-name" />
+                </div>
               </div>
 
               <div class="field-card">

@@ -2,6 +2,7 @@
 import re
 
 from .catalog import variety, varieties, calendar, companions, nutrition
+from .climate import describe_climate, score_climate
 from .soil import soil_profile
 from .improvement import plan
 
@@ -59,15 +60,16 @@ def months_between(start, end):
     return months
 
 
-def calculate_score(texture_match, soil_ph, ph_range, season_match):
+def calculate_score(texture_match, soil_ph, ph_range, season_match, climate_part=None):
     """
     Calculate a preliminary rule-based compatibility index.
 
     Texture: 35 points
     Soil pH: 30 points
     Planting season: 20 points
+    Location climate: up to 15 points when NASA POWER or OpenET data exists
 
-    Missing pH and season data are excluded.
+    Missing pH, season, and climate data are excluded.
     Moisture is not scored without crop-specific requirements.
     """
     earned = 0.0
@@ -89,6 +91,10 @@ def calculate_score(texture_match, soil_ph, ph_range, season_match):
         if season_match:
             earned += 20
 
+    if climate_part and climate_part.get("possible"):
+        possible += climate_part["possible"]
+        earned += climate_part["earned"]
+
     return round((earned / possible) * 100)
 
 
@@ -100,7 +106,8 @@ def assess(
     soil_ph=None,
     moisture=None,
     nitrogen=None,
-    location=""
+    location="",
+    climate=None,
 ):
     """Evaluate preliminary crop suitability."""
 
@@ -228,45 +235,63 @@ def assess(
             "Soil nitrogen status was not measured."
         )
 
-    # 5. Calculate compatibility percentage
+    # 5. Compare the variety with location climate when coordinates resolved
+    climate_part = score_climate(
+        selected_variety.get("water_requirement"),
+        selected_variety.get("growing_season"),
+        climate,
+    )
+    issues.extend(climate_part["issues"])
+    evidence.extend(climate_part["evidence"])
+    improvements = plan(
+        soil,
+        selected_variety["category"],
+        soil_ph,
+        preferred_ph,
+        moisture,
+        nitrogen,
+    )
+    improvements.extend(climate_part["improvements"])
+
+    # 6. Calculate compatibility percentage
     compatibility_score = calculate_score(
         texture_match=texture_match,
         soil_ph=soil_ph,
         ph_range=preferred_ph,
-        season_match=season_match
+        season_match=season_match,
+        climate_part=climate_part,
     )
 
-    # 6. Determine preliminary status
+    # 7. Determine preliminary status
     if issues:
         status = "Needs improvement / review"
     else:
         status = "Potentially suitable (preliminary)"
 
-    # 7. Return results to the frontend
+    coordinates = ""
+    if climate and climate.get("latitude") is not None:
+        coordinates = f"{climate['latitude']:.5f}, {climate['longitude']:.5f}"
+
+    # 8. Return results to the frontend
     return {
         "crop": selected_variety["category"],
         "variety": selected_variety["name"],
         "slug": slug,
         "location": location,
+        "coordinates": coordinates,
         "season": season,
         "soil": profile,
         "status": status,
 
         "compatibility_score": compatibility_score,
-        "score_method": "Preliminary rule-based compatibility index",
+        "score_method": "Preliminary rule-based index using soil, season, and location climate when coordinates resolve",
 
         "issues": issues,
         "positive_indicators": evidence,
         "unknowns": unknown,
 
-        "improvements": plan(
-            soil,
-            selected_variety["category"],
-            soil_ph,
-            preferred_ph,
-            moisture,
-            nitrogen
-        ),
+        "improvements": improvements,
+        "field_context": describe_climate(climate, season) if climate else [],
 
         "variety_requirements": {
             "soil_type": selected_variety.get("soil_type"),
@@ -287,18 +312,22 @@ def assess(
             "variety": "varieties.csv",
             "calendar": "planting_calendar.csv",
             "companions": "companion_plants.csv",
-            "nutrition": "nutrition.csv"
+            "nutrition": "nutrition.csv",
+            "climate": "NASA POWER agroclimatology",
+            "water": "USGS Water Data API",
+            "evapotranspiration": "OpenET",
         },
 
         "disclaimer": (
             "This percentage is a preliminary rule-based "
             "compatibility index, not a measured probability "
-            "of crop success. A field soil test is recommended."
+            "of crop success. Climate figures are grid or nearby-station "
+            "values, not a reading from the field. A soil test is recommended."
         )
     }
 
 
-def recommend(soil, season, zone=None, limit=5):
+def recommend(soil, season, zone=None, limit=5, climate=None):
     """Recommend varieties based on preliminary matching rules."""
     results = []
 
@@ -307,7 +336,8 @@ def recommend(soil, season, zone=None, limit=5):
             crop_variety["slug"],
             soil,
             season,
-            zone
+            zone,
+            climate=climate,
         )
 
         results.append({

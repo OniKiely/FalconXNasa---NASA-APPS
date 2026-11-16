@@ -255,6 +255,9 @@ footer { display: flex; justify-content: space-between; gap: 10px; padding: 24px
 }
 
 .soil-extras{display:grid;gap:8px}.result h5{margin:18px 0 6px;font-size:1rem}.result ul{margin:4px 0 10px;padding-left:22px;color:#45624d}.result li{margin:5px 0;line-height:1.5}
+.location-grid{display:grid;grid-template-columns:1.3fr 1fr .8fr;gap:8px}
+.location-grid input:last-child{grid-column:1 / -1}
+@media (max-width:780px){.location-grid{grid-template-columns:1fr}}
 
 /* Searchable crop picker */
 .crop-search-wrapper { position: relative; width: 100%; min-width: 0; }
